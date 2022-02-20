@@ -1,0 +1,64 @@
+GAME:
+      Splashscreen?  -> when starting game.
+      Graphics -> Pixel Art
+      Sound/Music
+      Menu -> maze size
+      Themes
+      Add default files to executable -> create dir with assets
+      Better movement -> player graphics.
+      Darkness -> circle radius -> what player can see
+                  -> some tiles give light. -> glow mushrooms, house(exit).
+                  -> some don't give light, but show things -> owls eyes
+      Player figure -> Blimpy a colord levitating blob
+
+CODE:
+      Use Query mutated -> player and camera?
+      Player -> parent of camera? or other way around
+      Optimize -> lifetimes/refs
+      MazeTiles -> use Refs -> also for solution -> no more x and y positions
+      Better file structures
+      LAYERS -> for tiles -> z-axis -> start/path always last axis
+                  -> then player -> rest is per row +1 z-axis
+      End game -> reaching exit
+      Determine spritesize by windowsize
+
+MORE:
+      Find tools for this -> music
+      Find tutorials -> pixelart
+      Look at more examples for Bevy stuff
+
+
+-----------------------------------------------------------------------------------
+
+We need a grid with maze walls between every MazeTile.
+
+* (#) First setup the entire grid with outer walls.
+      And inner walls that never change.
+      We can use random objects for the inner and outer walls
+      ike stone, tree, hole, mushroom,
+      or something with a theme, like a pumpkin (halloween), christmas tree, snowman
+* (G) Goto spots where a player can start from (or exit).
+* (- or |) for blocking of directions that can be open or closed
+      That also can have the same random object as pillars or walls
+
+# = permanent wall
+| = can be used for other walls or ground
+- = can be used for other walls or ground
+
+# # # # # # # # #
+# G | G | G | G #
+# - # - # - # - #
+# G | G | G | G #
+# # # # # # # # #
+
+After the standard generation:
+Fill in the - and | places with other tiles.
+1 tile for all the walls, grounds, exit and the player like this:
+S = Starting point, P = player, E = Exit, @ = next spot where we can go (ground)
+- or | are the tiles that block a direction (walls)
+
+# # # # # # # # #
+# S @ @ | @ @ E #
+# - # @ # @ # - #
+# @ @ P @ @ @ @ #
+# # # # # # # # #

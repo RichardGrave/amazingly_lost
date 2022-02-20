@@ -1,0 +1,14 @@
+[package]
+name = "amazingly_lost_2d"
+version = "0.1.0"
+authors = ["richardgrave <29334853+RichardGrave@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.5.0"
+rand = "0.8.3"
+
+[profile.dev]
+opt-level = 3

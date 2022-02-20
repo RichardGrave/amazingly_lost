@@ -1,0 +1,39 @@
+* Need more images for walls, open tiles, etc.
+    - Find texture packs online? -> Free ones?
+    - Same for sound and connect sounds to (special) images?
+      For player collision detection with the special images making then a sound. -> Sleeping bear = snoring
+* Refactor in smaller function/methods if possible.
+* Add a bigger collision box around the player to trigger sounds/music when comming near a special tile.
+* Darkness and light sources. Radiance?
+* UI menus etc.
+* Saving all DEFAULT files (images/sounds/music/etc.) that are needed in the binary
+  and when they are not found in the file structure (on disk) then add them.
+* Game items -> tools for more light, door/keys, maybe teleportation or a ladder to go over walls?
+* Timer -> how fast you have found the exit
+        -> or to complete the maze within a certain amount of time?
+* Point system -> Bonus items to find
+               -> faster completion of the maze gives more points?
+
+
+# Amazingly Lost
+## Maze game
+
+* **Game**:
+    * Procedural / randomized maze
+    * Menu
+    * Pixel art -> wall, items, characters, etc.
+    * Story
+    * Music / Sound
+    * Credits (maybe)
+* **Theme's**:
+    * Snow
+    * Space
+    * Dungeon
+    * Forest
+* **Mode**:
+    * Day - See everything on the screen
+    * Night - See only a radius or light around character
+    * Opposite of Night mode - radius of darkness and rest of screen is visible
+* **Levels**:
+    * Different size mazes
+    * More floors -> ladders to go up or down to make maze more difficult
