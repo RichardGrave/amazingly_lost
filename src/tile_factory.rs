@@ -4,7 +4,7 @@ use std::path::Path;
 use std::{env, path::PathBuf};
 
 use crate::amazingly_lost_data::AmazinglyLostData;
-use crate::game_state::GameState;
+
 use crate::maze_tile::TileType;
 
 // Paths to the textures
@@ -276,8 +276,8 @@ pub fn load_all_assets(
 
 fn load_game_tiles(
     current_dir: &PathBuf,
-    mut asset_server: &mut Res<AssetServer>,
-    mut materials: &mut ResMut<Assets<ColorMaterial>>,
+    asset_server: &mut Res<AssetServer>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
     theme: &String,
     tile_dir: &String,
 ) -> Vec<Handle<ColorMaterial>> {
@@ -316,13 +316,13 @@ fn load_game_tiles(
     game_tiles_vec
 }
 
-// TODO:RG for now this works, but what if i wan't animations???
+// TODO:RG for now this works, but what if i want animations???
 // We only have one of a player, start and exit. No need to do a loop.
 fn load_game_uniques(
     current_dir: &PathBuf,
-    mut asset_server: &mut Res<AssetServer>,
-    mut materials: &mut ResMut<Assets<ColorMaterial>>,
-    mut amazing_data: &mut ResMut<AmazinglyLostData>,
+    asset_server: &mut Res<AssetServer>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    amazing_data: &mut ResMut<AmazinglyLostData>,
 ) {
     let start_png_file = format!(
         "{}/assets/theme/{}/uniques/start.png",

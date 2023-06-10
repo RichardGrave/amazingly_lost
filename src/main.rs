@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::render::camera::ScalingMode;
 mod amazingly_lost_data;
 mod game_flow;
 mod game_state;
@@ -11,13 +12,12 @@ mod tile_factory;
 
 use crate::game_flow::GameFlowPlugin;
 use crate::game_state::{ChangeGameStateEvent, ChangeGameStatePlugin, GameState};
-use crate::maze_generator::GameTile;
+
 use crate::player::{ChangeDirectionEvent, ChangeDirectionPlugin};
 use amazingly_lost_data::AmazinglyLostData;
-use bevy::render::draw::OutsideFrustum;
+
 use bevy::sprite::SpriteSettings;
 use keyboard_input::KeyboardInputPlugin;
-use player::Player;
 
 const GAME_TITLE: &str = "Amazingly Lost";
 
@@ -51,7 +51,7 @@ fn window_descriptor() -> WindowDescriptor {
         width: 1440.0,
         height: 900.0,
         vsync: true,
-        resizable: false,
+        resizable: true,
         mode: bevy::window::WindowMode::Windowed,
         // TODO:RG use when finished
         // mode: bevy::window::WindowMode::BorderlessFullscreen,
@@ -64,13 +64,15 @@ fn initialize_game_data() -> AmazinglyLostData {
     AmazinglyLostData::new()
 }
 
-fn setup_game(mut commands: Commands, mut amazing_data: ResMut<AmazinglyLostData>) {
+fn setup_game(mut commands: Commands, _amazing_data: ResMut<AmazinglyLostData>) {
     // Camera for game menu's etc.
     // TODO:RG implement a use for this
-    let mut ui_camera = UiCameraBundle::default();
+    let ui_camera = UiCameraBundle::default();
     commands.spawn_bundle(ui_camera);
 
     // Camera for the game itself
-    let mut camera = OrthographicCameraBundle::new_2d();
+    let camera = OrthographicCameraBundle::new_2d();
+    // Set camera higher
+    // camera.orthographic_projection.scale = camera.orthographic_projection.scale + 1f32;
     commands.spawn_bundle(camera);
 }

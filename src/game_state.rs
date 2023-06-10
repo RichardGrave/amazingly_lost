@@ -1,5 +1,4 @@
-use bevy::{asset::HandleId, prelude::*};
-use bevy::ecs::prelude::Res;
+use bevy::prelude::*;
 
 pub struct ChangeGameStateEvent(pub GameState);
 
@@ -22,7 +21,6 @@ pub fn check_game_state_change(
     }
 }
 
-
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     StartMenu,
@@ -35,5 +33,5 @@ pub enum GameState {
     // About,
     GenerateNewGame,
     // Loading,
-    LoadingAssets
+    LoadingAssets,
 }

@@ -1,10 +1,10 @@
 use crate::amazingly_lost_data::AmazinglyLostData;
 use crate::game_state::{ChangeGameStateEvent, GameState};
 use crate::maze_generator::GameTile;
-use crate::tile_factory::GameTileHandlers;
+
 use crate::{maze_generator, tile_factory};
+use bevy::prelude::*;
 use bevy::render::camera::Camera;
-use bevy::{asset::HandleId, prelude::*};
 
 pub struct GameFlowPlugin;
 
@@ -21,8 +21,9 @@ fn init_game_flow(
     mut game_tile_query: Query<(Entity, (With<GameTile>, Without<Camera>))>,
     mut asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut game_state: ResMut<State<GameState>>,
+    game_state: ResMut<State<GameState>>,
     mut change_game_state: EventWriter<ChangeGameStateEvent>,
+    mut only_camera: Query<(Entity, With<Camera>)>,
 ) {
     match game_state.current() {
         GameState::StartMenu => {}

@@ -1,10 +1,10 @@
 use crate::player;
 
-use crate::maze_generator::{SMALL_MAZE, VERY_VERY_LARGE_MAZE};
-use crate::maze_tile::MazeTile;
+use crate::maze_generator::SMALL_MAZE;
+
 use crate::tile_factory::GameTileHandlers;
-use bevy::ecs::prelude::Res;
-use bevy::{asset::HandleId, prelude::*};
+
+use bevy::prelude::*;
 use player::Player;
 
 pub const DEFAULT_THEME: &str = "default";

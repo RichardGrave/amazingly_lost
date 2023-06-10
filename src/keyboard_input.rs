@@ -1,19 +1,20 @@
-use crate::maze_generator;
-use crate::{amazingly_lost_data, player};
+use crate::player;
 use crate::{amazingly_lost_data::AmazinglyLostData, player::Player};
 
 use crate::game_state::{ChangeGameStateEvent, GameState};
-use crate::maze_generator::{
-    CollisionTile, GameTile, PlayerTile, SMALL_MAZE, VERY_VERY_LARGE_MAZE,
-};
-use crate::maze_tile::MazeTile;
+use crate::maze_generator::{CollisionTile, PlayerTile, SMALL_MAZE, VERY_VERY_LARGE_MAZE};
+
 use crate::player::ChangeDirectionEvent;
-use crate::tile_factory::GameTileHandlers;
+
 use bevy::app::AppExit;
-use bevy::ecs::system::EntityCommands;
+
 use bevy::prelude::*;
 use bevy::render::camera::{Camera, OrthographicProjection};
+use bevy::sprite::SpriteSettings;
+use bevy::window::WindowResized;
 use player::Directions;
+
+const MAZE_SIZE_SCALING: u16 = 33u16;
 
 pub struct KeyboardInputPlugin;
 
@@ -26,15 +27,24 @@ impl Plugin for KeyboardInputPlugin {
 
 pub fn keyboard_input_game(
     keyboard_input: Res<Input<KeyCode>>,
-    // mut camera_query: Query<(&mut OrthographicProjection, (With<Camera>, (Without<CollisionTile>, Without<PlayerTile>)))>,
+    windows: Res<Windows>,
+    // active_cameras: Res<ActiveCameras>,
+    mut sprite_settings: ResMut<SpriteSettings>,
+    mut camera_query: Query<(
+        &mut OrthographicProjection,
+        &Camera,
+        &mut Transform,
+        (With<Camera>, (Without<CollisionTile>, Without<PlayerTile>)),
+    )>,
     mut player_query: Query<(
         &mut Player,
         (With<PlayerTile>, (Without<CollisionTile>, Without<Camera>)),
     )>,
     mut amazing_data: ResMut<AmazinglyLostData>,
-    mut game_state: Res<State<GameState>>,
+    game_state: Res<State<GameState>>,
     mut change_game_state: EventWriter<ChangeGameStateEvent>,
     mut change_direction: EventWriter<ChangeDirectionEvent>,
+    mut changed_window: EventWriter<WindowResized>,
     mut exit: EventWriter<AppExit>,
 ) {
     // Only when playing a game and the player is NOT already moving
@@ -52,8 +62,10 @@ pub fn keyboard_input_game(
         } else if keyboard_input.just_pressed(KeyCode::PageUp) {
             if amazing_data.maze_size.0 < VERY_VERY_LARGE_MAZE {
                 println!("Bigger maze");
-                amazing_data.maze_size =
-                    (amazing_data.maze_size.0 + 33, amazing_data.maze_size.1 + 33);
+                amazing_data.maze_size = (
+                    amazing_data.maze_size.0 + MAZE_SIZE_SCALING,
+                    amazing_data.maze_size.1 + MAZE_SIZE_SCALING,
+                );
                 println!(
                     "SIZE: {:?}{:?}",
                     amazing_data.maze_size,
@@ -64,8 +76,10 @@ pub fn keyboard_input_game(
         } else if keyboard_input.just_pressed(KeyCode::PageDown) {
             if amazing_data.maze_size.0 > SMALL_MAZE {
                 println!("Smaller maze");
-                amazing_data.maze_size =
-                    (amazing_data.maze_size.0 - 33, amazing_data.maze_size.1 - 33);
+                amazing_data.maze_size = (
+                    amazing_data.maze_size.0 - MAZE_SIZE_SCALING,
+                    amazing_data.maze_size.1 - MAZE_SIZE_SCALING,
+                );
                 println!(
                     "SIZE: {:?}{:?}",
                     amazing_data.maze_size,
@@ -73,21 +87,65 @@ pub fn keyboard_input_game(
                 );
                 change_game_state.send(ChangeGameStateEvent(GameState::GenerateNewGame));
             }
+        } else if keyboard_input.just_pressed(KeyCode::U) {
+            for (mut ortho_projection, camera, mut _transform, _) in camera_query.iter_mut() {
+                if ortho_projection.scale + 1f32 < 10.0f32 {
+                    ortho_projection.scale = ortho_projection.scale + 1f32;
+
+                    if let Some(game_window) = windows.get(camera.window) {
+                        changed_window.send(WindowResized {
+                            id: camera.window,
+                            width: game_window.width(),
+                            height: game_window.height(),
+                        });
+                    }
+                }
+            }
+        } else if keyboard_input.just_pressed(KeyCode::I) {
+            for (mut ortho_projection, camera, mut _transform, _) in camera_query.iter_mut() {
+                if ortho_projection.scale - 1f32 >= 1.0f32 {
+                    ortho_projection.scale = ortho_projection.scale - 1f32;
+
+                    if let Some(game_window) = windows.get(camera.window) {
+                        changed_window.send(WindowResized {
+                            id: camera.window,
+                            width: game_window.width(),
+                            height: game_window.height(),
+                        });
+                    }
+                }
+            }
+        } else if keyboard_input.just_pressed(KeyCode::J) {
+            for (mut _ortho_projection, _camera, mut transform, _) in camera_query.iter_mut() {
+                if transform.scale.x + 1f32 < 10.0f32 {
+                    transform.scale.x = transform.scale.x + 1f32;
+                    transform.scale.y = transform.scale.y + 1f32;
+                    transform.scale.z = transform.scale.z + 1f32;
+                }
+            }
+        } else if keyboard_input.just_pressed(KeyCode::K) {
+            for (mut _ortho_projection, _camera, mut transform, _) in camera_query.iter_mut() {
+                if transform.scale.x - 1f32 >= 1.0f32 {
+                    transform.scale.x = transform.scale.x - 1f32;
+                    transform.scale.y = transform.scale.y - 1f32;
+                    transform.scale.z = transform.scale.z - 1f32;
+                }
+            }
         }
     }
 }
 
 fn check_for_player_movement(
     keyboard_input: &Res<Input<KeyCode>>,
-    mut player_query: &mut Query<(
+    player_query: &mut Query<(
         &mut Player,
         (With<PlayerTile>, (Without<CollisionTile>, Without<Camera>)),
     )>,
-    mut change_direction: &mut EventWriter<ChangeDirectionEvent>,
+    change_direction: &mut EventWriter<ChangeDirectionEvent>,
 ) {
     // Even though we don't change anything for the player, we need to use the mut().
     // Else we will get an ReadOnlyFetch error from the compiler
-    if let Ok((mut player, _filters)) = player_query.single_mut() {
+    if let Ok((player, _filters)) = player_query.single_mut() {
         // We only want to check if a key is pressed if we don't move from tile to tile
         if player.moving == Directions::None {
             if keyboard_input.pressed(KeyCode::Up) || keyboard_input.pressed(KeyCode::W) {

@@ -1,13 +1,10 @@
 use crate::amazingly_lost_data::AmazinglyLostData;
-use crate::game_state::GameState;
+
 use crate::maze_tile::{MazeTile, TileType};
-use crate::player::Player;
-use crate::tile_factory::GameTileHandlers;
-use bevy::ecs::system::EntityCommands;
+
 use bevy::prelude::*;
 use bevy::render::camera::Camera;
 use rand::Rng;
-use std::{env, path::Path};
 
 pub const SPRITE_SIZE_MAZE: usize = 100;
 pub const NEXT_OPEN_WALL: usize = 15;
@@ -38,7 +35,7 @@ pub struct PlayerTile;
 pub fn create_new_maze(
     mut commands: &mut Commands,
     mut amazing_data: &mut ResMut<AmazinglyLostData>,
-    mut camera_query: &mut Query<(&mut Transform, &Camera)>,
+    camera_query: &mut Query<(&mut Transform, &Camera)>,
 ) {
     let (mut maze, solution) = create_random_maze(
         amazing_data.maze_size.0 as usize,
@@ -360,10 +357,10 @@ fn initialize_maze_size(width: &usize, height: &usize) -> (Vec<Vec<MazeTile>>, u
 }
 
 pub fn paint_the_maze(
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     solution: &Vec<(usize, usize)>,
     maze: &mut Vec<Vec<MazeTile>>,
-    mut amazing_data: &mut ResMut<AmazinglyLostData>,
+    amazing_data: &mut ResMut<AmazinglyLostData>,
 ) {
     // TODO:RG WALLS also part of solution and dont overpaint
     for (x, y) in solution {
@@ -390,6 +387,10 @@ pub fn paint_the_maze(
                             SPRITE_SIZE_MAZE as f32,
                             SPRITE_SIZE_MAZE as f32,
                         ));
+
+                        let flip_it: bool = rand::thread_rng().gen_range(0..2) == 1;
+
+                        border_texuture_handle.sprite.flip_x = flip_it;
 
                         commands
                             .spawn_bundle(border_texuture_handle.clone())
@@ -481,8 +482,8 @@ fn place_player_in_maze(commands: &mut Commands, amazing_data: &mut ResMut<Amazi
 }
 
 fn place_camera_on_starting_tile(
-    mut camera_query: &mut Query<(&mut Transform, &Camera)>,
-    mut amazing_data: &mut ResMut<AmazinglyLostData>,
+    camera_query: &mut Query<(&mut Transform, &Camera)>,
+    amazing_data: &mut ResMut<AmazinglyLostData>,
 ) {
     for mut camera in camera_query.iter_mut() {
         // Place Camera on the same x, y as the Player
@@ -492,8 +493,8 @@ fn place_camera_on_starting_tile(
 }
 
 pub fn clear_maze_tiles(
-    mut commands: &mut Commands,
-    mut game_tile_query: &mut Query<(Entity, (With<GameTile>, Without<Camera>))>,
+    commands: &mut Commands,
+    game_tile_query: &mut Query<(Entity, (With<GameTile>, Without<Camera>))>,
 ) {
     // Despawn every GameTile, but NOT the camera. Or we will see a black screen
     for (entity, _game_tile) in game_tile_query.iter_mut() {

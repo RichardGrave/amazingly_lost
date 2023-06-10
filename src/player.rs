@@ -1,12 +1,9 @@
-use crate::amazingly_lost_data::AmazinglyLostData;
-
 use crate::game_state::{ChangeGameStateEvent, GameState};
 use crate::maze_generator::{CollisionTile, CollisionType, PlayerTile, SPRITE_SIZE_MAZE};
-use crate::maze_tile::TileType;
-use bevy::math::Vec3Swizzles;
+
 use bevy::render::camera::Camera;
 use bevy::render::draw::OutsideFrustum;
-use bevy::render::renderer::RenderResource;
+
 use bevy::{
     prelude::*,
     sprite::collide_aabb::{collide, Collision},
@@ -15,7 +12,7 @@ use bevy::{
 // SPRITE_SIZE_MAZE should always be evenly divisable by the MOVEMENT_ACCELERATION
 // SPRITE_SIZE_MAZE 100 and MOVEMENT_ACCELERATION 20.0 seems the best to use
 pub const MOVEMENT_ACCELERATION: f32 = 20.0f32;
-pub const MOVEMENT: f32 = (SPRITE_SIZE_MAZE as f32 / MOVEMENT_ACCELERATION); //This was default -> 3.0f32;
+pub const MOVEMENT: f32 = SPRITE_SIZE_MAZE as f32 / MOVEMENT_ACCELERATION; //This was default -> 3.0f32;
 
 #[derive(Clone, Debug, Eq, PartialEq, Copy)]
 pub enum Directions {
@@ -78,7 +75,7 @@ pub fn check_direction_change(
     )>,
     mut change_direction: EventReader<ChangeDirectionEvent>,
     mut change_game_state: EventWriter<ChangeGameStateEvent>,
-    mut game_state: ResMut<State<GameState>>,
+    game_state: ResMut<State<GameState>>,
 ) {
     let mut new_direction = Directions::None;
 
@@ -121,17 +118,17 @@ impl Player {
 }
 
 pub fn move_to_next_maze_tile(
-    mut camera_query: &mut Query<(
+    camera_query: &mut Query<(
         &mut Transform,
         (With<Camera>, (Without<CollisionTile>, Without<PlayerTile>)),
     )>,
-    mut player_query: &mut Query<(
+    player_query: &mut Query<(
         &mut Transform,
         &mut Sprite,
         &mut Player,
         (With<PlayerTile>, (Without<CollisionTile>, Without<Camera>)),
     )>,
-    mut collision_query: &mut Query<(
+    collision_query: &mut Query<(
         &Transform,
         &Sprite,
         &CollisionTile,
@@ -140,7 +137,7 @@ pub fn move_to_next_maze_tile(
             (Without<Camera>, Without<OutsideFrustum>),
         ),
     )>,
-    mut change_game_state: &mut EventWriter<ChangeGameStateEvent>,
+    change_game_state: &mut EventWriter<ChangeGameStateEvent>,
     new_direction: &Directions,
     game_state: &GameState,
 ) {
@@ -228,25 +225,25 @@ fn set_next_player_position(
         player.next_position_x = player_translation.x - SPRITE_SIZE_MAZE as f32;
         player.next_position_y = player_translation.y;
         player.moving = Directions::West;
-        // println!("Go left");
+        println!("Go left");
     } else if *new_direction == Directions::East {
         // player_translation.x += MOVEMENT;
         player.next_position_x = player_translation.x + SPRITE_SIZE_MAZE as f32;
         player.next_position_y = player_translation.y;
         player.moving = Directions::East;
-        // println!("Go right");
+        println!("Go right");
     } else if *new_direction == Directions::North {
         // player_translation.y += MOVEMENT;
         player.next_position_y = player_translation.y + SPRITE_SIZE_MAZE as f32;
         player.next_position_x = player_translation.x;
         player.moving = Directions::North;
-        // println!("Go up");
+        println!("Go up");
     } else if *new_direction == Directions::South {
         // player_translation.y -= MOVEMENT;
         player.next_position_y = player_translation.y - SPRITE_SIZE_MAZE as f32;
         player.next_position_x = player_translation.x;
         player.moving = Directions::South;
-        // println!("Go down");
+        println!("Go down");
     }
     // println!("Direction: {:?} - posx: {:?} - posy:{:?}", new_direction, player.next_position_x, player.next_position_y);
 }
@@ -254,7 +251,7 @@ fn set_next_player_position(
 fn handle_movement_by_collision(
     player: &mut Player,
     player_translation: &mut Vec3,
-    mut camera_query: &mut Query<(
+    camera_query: &mut Query<(
         &mut Transform,
         (With<Camera>, (Without<CollisionTile>, Without<PlayerTile>)),
     )>,
