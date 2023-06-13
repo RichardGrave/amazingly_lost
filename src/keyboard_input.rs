@@ -2,7 +2,9 @@ use crate::player;
 use crate::{amazingly_lost_data::AmazinglyLostData, player::Player};
 
 use crate::game_state::{ChangeGameStateEvent, GameState};
-use crate::maze_generator::{CollisionTile, PlayerTile, SMALL_MAZE, VERY_VERY_LARGE_MAZE};
+use crate::maze_generator::{
+    CollisionTile, GameTile, PlayerTile, SolutionTile, SMALL_MAZE, VERY_VERY_LARGE_MAZE,
+};
 
 use crate::player::ChangeDirectionEvent;
 
@@ -33,8 +35,6 @@ impl Plugin for KeyboardInputPlugin {
 pub fn keyboard_input_game(
     keyboard_input: Res<Input<KeyCode>>,
     windows: Res<Windows>,
-    // active_cameras: Res<ActiveCameras>,
-    mut sprite_settings: ResMut<SpriteSettings>,
     mut camera_query: Query<(
         &mut OrthographicProjection,
         &Camera,
@@ -45,6 +45,7 @@ pub fn keyboard_input_game(
         &mut Player,
         (With<PlayerTile>, (Without<CollisionTile>, Without<Camera>)),
     )>,
+    mut mazetile_query: Query<(&mut Visible, (With<GameTile>, With<SolutionTile>))>,
     mut amazing_data: ResMut<AmazinglyLostData>,
     game_state: Res<State<GameState>>,
     mut change_game_state: EventWriter<ChangeGameStateEvent>,
@@ -59,6 +60,11 @@ pub fn keyboard_input_game(
         if keyboard_input.just_pressed(KeyCode::N) {
             println!("New Game");
             change_game_state.send(ChangeGameStateEvent(GameState::GenerateNewGame));
+        } else if keyboard_input.just_pressed(KeyCode::P) {
+            for (mut maze_tile_sprite, _) in mazetile_query.iter_mut() {
+                // Hide current GameTiles and show Solution GameTiles or the other way around
+                maze_tile_sprite.is_visible = !maze_tile_sprite.is_visible;
+            }
         } else if keyboard_input.just_pressed(KeyCode::Q)
             || keyboard_input.just_pressed(KeyCode::Escape)
         {
@@ -141,6 +147,9 @@ pub fn keyboard_input_game(
                 }
             }
         }
+
+        // TODO:RG show solution path -> different color/tile
+        // TODO:RG also option for free camera movement -> plus reset to player
     }
 }
 

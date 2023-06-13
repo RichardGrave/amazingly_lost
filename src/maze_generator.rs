@@ -30,6 +30,7 @@ pub struct CollisionTile {
 
 // A MovingTile and LockedTile are both a GameTile
 pub struct GameTile;
+pub struct SolutionTile;
 pub struct PlayerTile;
 
 pub fn create_new_maze(
@@ -377,23 +378,23 @@ pub fn paint_the_maze(
         for maze_tile in maze_row {
             match &maze_tile.tile_type {
                 TileType::Border | TileType::Wall => {
-                    if let Some(mut border_texuture_handle) =
+                    if let Some(mut border_texture_handle) =
                         amazing_data.game_tile_handlers.get_random_game_tile(
                             &maze_tile.tile_type,
                             &Vec3::new(pos_x, pos_y as f32, 1.0),
                         )
                     {
-                        border_texuture_handle.sprite = Sprite::new(Vec2::new(
+                        border_texture_handle.sprite = Sprite::new(Vec2::new(
                             SPRITE_SIZE_MAZE as f32,
                             SPRITE_SIZE_MAZE as f32,
                         ));
 
                         let flip_it: bool = rand::thread_rng().gen_range(0..2) == 1;
 
-                        border_texuture_handle.sprite.flip_x = flip_it;
+                        border_texture_handle.sprite.flip_x = flip_it;
 
                         commands
-                            .spawn_bundle(border_texuture_handle.clone())
+                            .spawn_bundle(border_texture_handle.clone())
                             .insert(GameTile)
                             .insert(CollisionTile {
                                 collision_type: CollisionType::CollisionWall,
@@ -403,17 +404,17 @@ pub fn paint_the_maze(
                 TileType::Start => {
                     println!("Start:{}-{}", pos_x, pos_y);
                     amazing_data.starting_point_sprites = (pos_x, pos_y);
-                    if let Some(mut start_texuture_handle) = amazing_data
+                    if let Some(mut start_texture_handle) = amazing_data
                         .game_tile_handlers
                         .get_game_start(&Vec3::new(pos_x, pos_y, 1.0))
                     {
-                        start_texuture_handle.sprite = Sprite::new(Vec2::new(
+                        start_texture_handle.sprite = Sprite::new(Vec2::new(
                             SPRITE_SIZE_MAZE as f32,
                             SPRITE_SIZE_MAZE as f32,
                         ));
 
                         commands
-                            .spawn_bundle(start_texuture_handle.clone())
+                            .spawn_bundle(start_texture_handle.clone())
                             .insert(GameTile)
                             .insert(CollisionTile {
                                 collision_type: CollisionType::CollisionStart,
@@ -421,17 +422,17 @@ pub fn paint_the_maze(
                     }
                 }
                 TileType::Exit => {
-                    if let Some(mut exit_texuture_handle) = amazing_data
+                    if let Some(mut exit_texture_handle) = amazing_data
                         .game_tile_handlers
                         .get_game_exit(&Vec3::new(pos_x, pos_y, 1.0))
                     {
-                        exit_texuture_handle.sprite = Sprite::new(Vec2::new(
+                        exit_texture_handle.sprite = Sprite::new(Vec2::new(
                             SPRITE_SIZE_MAZE as f32,
                             SPRITE_SIZE_MAZE as f32,
                         ));
 
                         commands
-                            .spawn_bundle(exit_texuture_handle.clone())
+                            .spawn_bundle(exit_texture_handle.clone())
                             .insert(GameTile)
                             .insert(CollisionTile {
                                 collision_type: CollisionType::CollisionExit,
@@ -439,18 +440,37 @@ pub fn paint_the_maze(
                     }
                 }
                 TileType::Open => {
-                    if let Some(mut open_texuture_handle) = amazing_data
+                    if let Some(mut open_texture_handle) = amazing_data
                         .game_tile_handlers
                         .get_random_game_tile(&maze_tile.tile_type, &Vec3::new(pos_x, pos_y, 1.0))
                     {
-                        open_texuture_handle.sprite = Sprite::new(Vec2::new(
+                        open_texture_handle.sprite = Sprite::new(Vec2::new(
                             SPRITE_SIZE_MAZE as f32,
                             SPRITE_SIZE_MAZE as f32,
                         ));
 
-                        commands
-                            .spawn_bundle(open_texuture_handle.clone())
-                            .insert(GameTile);
+                        if maze_tile.part_of_solution {
+                            // Both get SolutionTile
+                            commands
+                                .spawn_bundle(open_texture_handle.clone())
+                                .insert(GameTile)
+                                .insert(SolutionTile);
+
+                            // Only different material
+                            let mut solution_texture_handle = open_texture_handle.clone();
+                            solution_texture_handle.material =
+                                amazing_data.game_tile_handlers.solution.clone();
+                            solution_texture_handle.visible.is_visible = false;
+                            commands
+                                .spawn_bundle(solution_texture_handle)
+                                .insert(GameTile)
+                                .insert(SolutionTile);
+                        } else {
+                            // Only GameTile if this is not the solution path
+                            commands
+                                .spawn_bundle(open_texture_handle.clone())
+                                .insert(GameTile);
+                        }
                     }
                 }
             }

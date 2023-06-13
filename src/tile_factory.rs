@@ -59,6 +59,7 @@ pub struct GameTileHandlers {
     pub start: Handle<ColorMaterial>,
     pub exit: Handle<ColorMaterial>,
     pub region: Handle<ColorMaterial>,
+    pub solution: Handle<ColorMaterial>,
 }
 
 impl GameTileHandlers {
@@ -77,6 +78,7 @@ impl GameTileHandlers {
             start: Handle::weak(HandleId::default::<ColorMaterial>()),
             exit: Handle::weak(HandleId::default::<ColorMaterial>()),
             region: Handle::weak(HandleId::default::<ColorMaterial>()),
+            solution: Handle::weak(HandleId::default::<ColorMaterial>()),
         }
     }
 
@@ -152,6 +154,18 @@ impl GameTileHandlers {
         }
     }
 
+    pub fn get_game_solution(&self, position: &Vec3) -> Option<SpriteBundle> {
+        if let handle = &self.solution {
+            Some(SpriteBundle {
+                material: handle.clone(),
+                transform: Transform::from_translation(*position),
+                ..Default::default()
+            })
+        } else {
+            None
+        }
+    }
+
     pub fn get_game_exit(&self, position: &Vec3) -> Option<SpriteBundle> {
         if let handle = &self.exit {
             Some(SpriteBundle {
@@ -182,6 +196,7 @@ impl GameTileHandlers {
             TileType::Exit => self.get_a_wall(is_normal),
             TileType::Wall => self.get_a_wall(is_normal),
             TileType::Border => self.get_a_wall(is_normal),
+            TileType::Open => self.get_ground(is_normal),
             TileType::Open => self.get_ground(is_normal),
         }
     }
@@ -300,7 +315,7 @@ fn load_game_tiles(
             // Add it to the walls vec for later use
             game_tiles_vec.push(materials.add(asset_server.load(png_file.as_str()).clone().into()));
         } else {
-            // Just in case we don't find any Wallw or Grounds
+            // Just in case we don't find any Walls or Grounds
             if game_tiles_vec.len() == 0 {
                 if *tile_dir == WALLS_NORMAL.to_string() {
                     game_tiles_vec.push(materials.add(Color::DARK_GREEN.into()));
@@ -369,4 +384,7 @@ fn load_game_uniques(
         // println!("Path DOESN'T exits");
         amazing_data.game_tile_handlers.player = materials.add(Color::YELLOW.into());
     }
+
+    // For now we just use RED
+    amazing_data.game_tile_handlers.solution = materials.add(Color::RED.into());
 }
