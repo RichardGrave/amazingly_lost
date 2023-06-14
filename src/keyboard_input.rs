@@ -11,15 +11,14 @@ use crate::player::ChangeDirectionEvent;
 use bevy::app::AppExit;
 
 use bevy::prelude::*;
-use bevy::render::camera::{Camera, OrthographicProjection};
-use bevy::sprite::SpriteSettings;
+use bevy::render::camera::Camera;
 use bevy::window::WindowResized;
 use player::Directions;
 
 const MAZE_SIZE_SCALING: u16 = 33u16;
 
 // For now we use the same value for frustum culling and zoom
-const MAX_ZOOM_FRUSTUM: f32 = 10.0f32;
+const MAX_ZOOM_FRUSTUM: f32 = 25.0f32;
 const MIN_ZOOM_FRUSTUM: f32 = 1.0f32;
 const STEP_ZOOM_FRUSTUM: f32 = 1.0f32;
 
@@ -34,10 +33,7 @@ impl Plugin for KeyboardInputPlugin {
 
 pub fn keyboard_input_game(
     keyboard_input: Res<Input<KeyCode>>,
-    windows: Res<Windows>,
     mut camera_query: Query<(
-        &mut OrthographicProjection,
-        &Camera,
         &mut Transform,
         (With<Camera>, (Without<CollisionTile>, Without<PlayerTile>)),
     )>,
@@ -50,7 +46,6 @@ pub fn keyboard_input_game(
     game_state: Res<State<GameState>>,
     mut change_game_state: EventWriter<ChangeGameStateEvent>,
     mut change_direction: EventWriter<ChangeDirectionEvent>,
-    mut changed_window: EventWriter<WindowResized>,
     mut exit: EventWriter<AppExit>,
 ) {
     // Only when playing a game and the player is NOT already moving
@@ -98,48 +93,18 @@ pub fn keyboard_input_game(
                 );
                 change_game_state.send(ChangeGameStateEvent(GameState::GenerateNewGame));
             }
-        } else if keyboard_input.just_pressed(KeyCode::U) {
-            for (mut ortho_projection, camera, mut _transform, _) in camera_query.iter_mut() {
-                if ortho_projection.scale + 1f32 < MAX_ZOOM_FRUSTUM {
-                    ortho_projection.scale = ortho_projection.scale + STEP_ZOOM_FRUSTUM;
-
-                    // We need to send a WindowResized event or it wil not zoom
-                    if let Some(game_window) = windows.get(camera.window) {
-                        changed_window.send(WindowResized {
-                            id: camera.window,
-                            width: game_window.width(),
-                            height: game_window.height(),
-                        });
-                    }
-                }
-            }
-        } else if keyboard_input.just_pressed(KeyCode::I) {
-            for (mut ortho_projection, camera, mut _transform, _) in camera_query.iter_mut() {
-                if ortho_projection.scale - 1f32 >= MIN_ZOOM_FRUSTUM {
-                    ortho_projection.scale = ortho_projection.scale - STEP_ZOOM_FRUSTUM;
-
-                    // We need to send a WindowResized event or it wil not zoom
-                    if let Some(game_window) = windows.get(camera.window) {
-                        changed_window.send(WindowResized {
-                            id: camera.window,
-                            width: game_window.width(),
-                            height: game_window.height(),
-                        });
-                    }
-                }
-            }
-        } else if keyboard_input.just_pressed(KeyCode::J) {
-            for (mut _ortho_projection, _camera, mut transform, _) in camera_query.iter_mut() {
-                // TODO:RG does frustum culling, but this also seems to zoom -> found out if this can be prevented
+        } else if keyboard_input.just_pressed(KeyCode::O) {
+            // Zoom out
+            for (mut transform, _) in camera_query.iter_mut() {
                 if transform.scale.x + 1f32 < MAX_ZOOM_FRUSTUM {
                     transform.scale.x = transform.scale.x + STEP_ZOOM_FRUSTUM;
                     transform.scale.y = transform.scale.y + STEP_ZOOM_FRUSTUM;
                     transform.scale.z = transform.scale.z + STEP_ZOOM_FRUSTUM;
                 }
             }
-        } else if keyboard_input.just_pressed(KeyCode::K) {
-            for (mut _ortho_projection, _camera, mut transform, _) in camera_query.iter_mut() {
-                // TODO:RG does frustum culling, but this also seems to zoom -> found out if this can be prevented
+        } else if keyboard_input.just_pressed(KeyCode::I) {
+            // Zoom in
+            for (mut transform, _) in camera_query.iter_mut() {
                 if transform.scale.x - 1f32 >= MIN_ZOOM_FRUSTUM {
                     transform.scale.x = transform.scale.x - STEP_ZOOM_FRUSTUM;
                     transform.scale.y = transform.scale.y - STEP_ZOOM_FRUSTUM;
@@ -147,8 +112,6 @@ pub fn keyboard_input_game(
                 }
             }
         }
-
-        // TODO:RG show solution path -> different color/tile
         // TODO:RG also option for free camera movement -> plus reset to player
     }
 }
